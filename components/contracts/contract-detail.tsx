@@ -7,6 +7,9 @@ import { useTranslation } from '@/lib/i18n/context';
 import { useAuth } from '@/lib/auth/context';
 import { writeAuditEntry } from '@/lib/security/audit-log';
 import { getContractById, deleteContract, updateContract } from '@/lib/mock-data/contracts';
+import { getStoredRipsRecords } from '@/lib/mock-data/rips';
+import { getStoredPopulationRecords } from '@/lib/mock-data/population';
+import { getStoredTarifarios } from '@/lib/mock-data/tarifarios';
 import type { Contract, ContractStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +50,8 @@ import {
   Activity,
   Clock,
   Upload,
+  DollarSign,
+  FileBarChart,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -71,10 +76,17 @@ export function ContractDetail({ contractId }: ContractDetailProps) {
   const [contract, setContract] = useState<Contract | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [ripsCount, setRipsCount] = useState(0);
+  const [populationCount, setPopulationCount] = useState(0);
+  const [tarifarioCount, setTarifarioCount] = useState(0);
 
   useEffect(() => {
     const found = getContractById(contractId);
     setContract(found || null);
+    setRipsCount(getStoredRipsRecords().length);
+    setPopulationCount(getStoredPopulationRecords().length);
+    const tarifs = getStoredTarifarios();
+    setTarifarioCount(tarifs.soat.length + tarifs.iss.length + tarifs.custom.length);
     setIsLoading(false);
   }, [contractId]);
 
@@ -279,60 +291,87 @@ export function ContractDetail({ contractId }: ContractDetailProps) {
 
         <TabsContent value="data" className="space-y-6 mt-6">
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-              <Link href="/data/rips">
-                <CardHeader>
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
-                    <Activity className="size-5" />
-                  </div>
-                  <CardTitle className="text-base">{t('nav.rips')}</CardTitle>
-                  <CardDescription>{t('data.rips.subtitle')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
+                  <Activity className="size-5" />
+                </div>
+                <CardTitle className="text-base">{t('nav.rips')}</CardTitle>
+                <CardDescription>{t('data.rips.subtitle')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-2xl font-bold">{formatNumber(ripsCount)}</div>
+                <p className="text-xs text-muted-foreground">{t('data.rips.summary.totalRecords')}</p>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/data/rips">
                     <Upload className="mr-2 size-4" />
                     {t('data.rips.uploadTitle')}
-                  </Button>
-                </CardContent>
-              </Link>
+                  </Link>
+                </Button>
+              </CardContent>
             </Card>
 
-            <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-              <Link href="/data/population">
-                <CardHeader>
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
-                    <Users className="size-5" />
-                  </div>
-                  <CardTitle className="text-base">{t('nav.population')}</CardTitle>
-                  <CardDescription>{t('data.population.subtitle')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
+                  <Users className="size-5" />
+                </div>
+                <CardTitle className="text-base">{t('nav.population')}</CardTitle>
+                <CardDescription>{t('data.population.subtitle')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-2xl font-bold">{formatNumber(populationCount)}</div>
+                <p className="text-xs text-muted-foreground">{t('data.population.summary.totalPopulation')}</p>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/data/population">
                     <Upload className="mr-2 size-4" />
                     {t('data.population.uploadTitle')}
-                  </Button>
-                </CardContent>
-              </Link>
+                  </Link>
+                </Button>
+              </CardContent>
             </Card>
 
-            <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-              <Link href="/data/tarifarios">
-                <CardHeader>
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
-                    <FileText className="size-5" />
-                  </div>
-                  <CardTitle className="text-base">{t('nav.tarifarios')}</CardTitle>
-                  <CardDescription>{t('data.tarifarios.subtitle')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
+                  <DollarSign className="size-5" />
+                </div>
+                <CardTitle className="text-base">{t('nav.tarifarios')}</CardTitle>
+                <CardDescription>{t('data.tarifarios.subtitle')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-2xl font-bold">{formatNumber(tarifarioCount)}</div>
+                <p className="text-xs text-muted-foreground">{t('data.tarifarios.summary.totalServices')}</p>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/data/tarifarios">
                     <Upload className="mr-2 size-4" />
                     {t('data.tarifarios.uploadTitle')}
-                  </Button>
-                </CardContent>
-              </Link>
+                  </Link>
+                </Button>
+              </CardContent>
             </Card>
           </div>
+
+          {/* Generate Technical Note */}
+          {hasPermission(['admin', 'analyst']) && (
+            <Card className="border-primary/50">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileBarChart className="size-4" />
+                  {t('notaTecnica.title')}
+                </CardTitle>
+                <CardDescription>{t('notaTecnica.subtitle')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild>
+                  <Link href={`/contracts/${contract.id}/nota-tecnica`}>
+                    <FileBarChart className="mr-2 size-4" />
+                    {t('notaTecnica.generate')}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6 mt-6">

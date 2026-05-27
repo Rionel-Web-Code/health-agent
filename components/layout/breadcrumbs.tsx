@@ -20,6 +20,8 @@ const routeLabels: Record<string, string> = {
   settings: 'nav.settings',
   help: 'nav.help',
   new: 'common.create',
+  'nota-tecnica': 'notaTecnica.title',
+  edit: 'common.edit',
 };
 
 export function Breadcrumbs() {

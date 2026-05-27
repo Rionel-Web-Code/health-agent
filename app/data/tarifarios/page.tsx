@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/lib/i18n/context';
 import { useAuth } from '@/lib/auth/context';
 import { writeAuditEntry } from '@/lib/security/audit-log';
 import { AppShell } from '@/components/layout/app-shell';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { FileUploader, type FileType, type UploadStatus } from '@/components/data-upload/file-uploader';
+import { DataPreview } from '@/components/data-upload/data-preview';
+import { parseFile, type ParseResult } from '@/lib/utils/file-parser';
 import {
   getStoredTarifarios,
   generateTarifarioRecords,
   saveTarifarios,
+  updateTarifario,
 } from '@/lib/mock-data/tarifarios';
 import type { TarifarioRecord, TarifarioType } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +45,9 @@ import {
   Search,
   RefreshCw,
   Settings,
+  Upload,
+  Trash2,
+  Database,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -56,6 +63,8 @@ function TarifariosPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [adjustmentFactor, setAdjustmentFactor] = useState(1.0);
   const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
+  const [parsedData, setParsedData] = useState<ParseResult<Record<string, unknown>> | null>(null);
 
   useEffect(() => {
     const stored = getStoredTarifarios();
@@ -83,11 +92,89 @@ function TarifariosPageContent() {
     );
   });
 
-  const handleApplyAdjustment = () => {
-    const newRecords = generateTarifarioRecords(activeTab, adjustmentFactor);
+  const handleFileSelect = useCallback(async (file: File, type: FileType) => {
+    setUploadStatus('uploading');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setUploadStatus('processing');
+
+    const result = await parseFile<Record<string, unknown>>(file, type);
+
+    setUploadStatus('validating');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setParsedData(result);
+    setUploadStatus(result.errors.length > 0 ? 'error' : 'complete');
+  }, []);
+
+  const handleFileRemove = useCallback(() => {
+    setParsedData(null);
+    setUploadStatus('idle');
+  }, []);
+
+  const handleConfirmUpload = useCallback(() => {
+    if (!parsedData) return;
+
+    const newRecords: TarifarioRecord[] = parsedData.data.map((row, index) => {
+      const baseVal = Number(row.baseValue || row.base_value || row.valor || row.value || 0);
+      const factor = Number(row.adjustmentFactor || row.adjustment_factor || row.factor || 1);
+      return {
+        id: `TAR-UPLOAD-${Date.now()}-${index}`,
+        tarifarioType: activeTab,
+        serviceCode: String(row.serviceCode || row.service_code || row.codigo || row.code || ''),
+        serviceName: String(row.serviceName || row.service_name || row.nombre || row.name || ''),
+        baseValue: baseVal,
+        adjustmentFactor: factor,
+        finalValue: Math.round(baseVal * factor),
+      };
+    });
+
+    const updated = {
+      ...tarifarios,
+      [activeTab]: [...tarifarios[activeTab], ...newRecords],
+    };
+    saveTarifarios(updated);
+    setTarifarios(updated);
+    setParsedData(null);
+    setUploadStatus('idle');
+
+    writeAuditEntry('DATA_UPLOAD', 'tarifario', `Uploaded ${newRecords.length} tariff records to ${activeTab}`, user?.id || '', user?.name || '', user?.role || '');
+    toast.success(t('data.tarifarios.messages.uploadSuccess', { count: newRecords.length }));
+  }, [parsedData, activeTab, tarifarios, user, t]);
+
+  const handleLoadMockData = useCallback(() => {
+    const defaultFactor = activeTab === 'iss' ? 0.85 : 1.0;
+    const newRecords = generateTarifarioRecords(activeTab, defaultFactor);
     const updated = {
       ...tarifarios,
       [activeTab]: newRecords,
+    };
+    saveTarifarios(updated);
+    setTarifarios(updated);
+    writeAuditEntry('DATA_CREATE', 'tarifario', `Loaded ${newRecords.length} sample tariff records for ${activeTab}`, user?.id || '', user?.name || '', user?.role || '');
+    toast.success(t('data.tarifarios.messages.mockLoaded', { count: newRecords.length }));
+  }, [activeTab, tarifarios, user, t]);
+
+  const handleClearData = useCallback(() => {
+    const updated = {
+      ...tarifarios,
+      [activeTab]: [],
+    };
+    saveTarifarios(updated);
+    setTarifarios(updated);
+    writeAuditEntry('DATA_DELETE', 'tarifario', `Cleared ${activeTab} tariff data`, user?.id || '', user?.name || '', user?.role || '');
+    toast.success(t('data.tarifarios.messages.cleared'));
+  }, [activeTab, tarifarios, user, t]);
+
+  const handleApplyAdjustment = () => {
+    const currentRecords = tarifarios[activeTab];
+    const adjustedRecords = currentRecords.map((r) => ({
+      ...r,
+      adjustmentFactor: adjustmentFactor,
+      finalValue: Math.round(r.baseValue * adjustmentFactor),
+    }));
+    const updated = {
+      ...tarifarios,
+      [activeTab]: adjustedRecords,
     };
     saveTarifarios(updated);
     setTarifarios(updated);
@@ -149,130 +236,202 @@ function TarifariosPageContent() {
         ))}
       </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Badge variant="outline">{activeTab.toUpperCase()}</Badge>
-                {tarifarioLabels[activeTab]}
-              </CardTitle>
-              <CardDescription>
-                {t('data.tarifarios.servicesAvailable', { count: formatNumber(tarifarios[activeTab].length) })}
-              </CardDescription>
-            </div>
-            {hasPermission(['admin', 'analyst']) && (
-              <div className="flex gap-2">
-                <Dialog open={isAdjustDialogOpen} onOpenChange={setIsAdjustDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Settings className="mr-2 size-4" />
-                      {t('data.tarifarios.adjustFactor')}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{t('data.tarifarios.adjustFactorTitle')}</DialogTitle>
-                      <DialogDescription>
-                        {t('data.tarifarios.adjustFactorDescription', { type: activeTab.toUpperCase() })}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="factor">{t('data.tarifarios.fields.adjustmentFactor')}</Label>
-                        <Input
-                          id="factor"
-                          type="number"
-                          step="0.01"
-                          min="0.1"
-                          max="5"
-                          value={adjustmentFactor}
-                          onChange={(e) => setAdjustmentFactor(parseFloat(e.target.value) || 1)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {t('data.tarifarios.factorExample')}
-                        </p>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsAdjustDialogOpen(false)}>
-                        {t('common.cancel')}
-                      </Button>
-                      <Button onClick={handleApplyAdjustment}>
-                        {t('data.tarifarios.applyAdjustment')}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <Button variant="outline" size="sm" onClick={handleResetTarifario}>
-                  <RefreshCw className="mr-2 size-4" />
-                  {t('data.tarifarios.reset')}
+      {/* Tabs: Upload / Data */}
+      <Tabs defaultValue="upload">
+        <TabsList>
+          <TabsTrigger value="upload">
+            <Upload className="mr-2 size-4" />
+            {t('common.upload')}
+          </TabsTrigger>
+          <TabsTrigger value="data">
+            <Database className="mr-2 size-4" />
+            {t('common.view')}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Upload Tab */}
+        <TabsContent value="upload" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t('data.tarifarios.uploadTitle')}</CardTitle>
+              <CardDescription>{t('data.tarifarios.uploadDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FileUploader
+                onFileSelect={handleFileSelect}
+                onFileRemove={handleFileRemove}
+                uploadStatus={uploadStatus}
+                isProcessing={uploadStatus !== 'idle' && uploadStatus !== 'complete' && uploadStatus !== 'error'}
+              />
+
+              {parsedData && parsedData.data.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium">{t('data.upload.preview')}</h3>
+                  <DataPreview
+                    data={parsedData.data}
+                    columns={parsedData.meta.columns}
+                    errors={parsedData.errors.map((e) => ({ row: e.row || 0, message: e.message }))}
+                  />
+                </div>
+              )}
+
+              {parsedData && uploadStatus === 'complete' && (
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={handleFileRemove}>
+                    {t('data.upload.cancelUpload')}
+                  </Button>
+                  <Button onClick={handleConfirmUpload}>
+                    <Upload className="mr-2 size-4" />
+                    {t('data.upload.confirmUpload')}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {hasPermission(['admin', 'analyst']) && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleLoadMockData}>
+                <Database className="mr-2 size-4" />
+                {t('common.loadSampleData')}
+              </Button>
+              {tarifarios[activeTab].length > 0 && (
+                <Button variant="outline" onClick={handleClearData}>
+                  <Trash2 className="mr-2 size-4" />
+                  {t('common.delete')}
                 </Button>
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search */}
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t('data.tarifarios.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          {/* Table */}
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('data.tarifarios.fields.serviceCode')}</TableHead>
-                  <TableHead>{t('data.tarifarios.fields.serviceName')}</TableHead>
-                  <TableHead className="text-right">{t('data.tarifarios.fields.baseValue')}</TableHead>
-                  <TableHead className="text-right">{t('data.tarifarios.fields.adjustmentFactor')}</TableHead>
-                  <TableHead className="text-right">{t('data.tarifarios.fields.finalValue')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRecords.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-32 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <FileText className="size-8 text-muted-foreground" />
-                        <p className="text-muted-foreground">{t('common.noData')}</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredRecords.slice(0, 20).map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-mono">{record.serviceCode}</TableCell>
-                      <TableCell className="max-w-[300px] truncate">{record.serviceName}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(record.baseValue)}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="outline">{record.adjustmentFactor}x</Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(record.finalValue)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {filteredRecords.length > 20 && (
-            <p className="text-sm text-muted-foreground text-center">
-              {t('data.tarifarios.showingRecords', { total: formatNumber(filteredRecords.length) })}
-            </p>
+              )}
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        {/* Data Tab */}
+        <TabsContent value="data" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Badge variant="outline">{activeTab.toUpperCase()}</Badge>
+                    {tarifarioLabels[activeTab]}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('data.tarifarios.servicesAvailable', { count: formatNumber(tarifarios[activeTab].length) })}
+                  </CardDescription>
+                </div>
+                {hasPermission(['admin', 'analyst']) && (
+                  <div className="flex gap-2">
+                    <Dialog open={isAdjustDialogOpen} onOpenChange={setIsAdjustDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Settings className="mr-2 size-4" />
+                          {t('data.tarifarios.adjustFactor')}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>{t('data.tarifarios.adjustFactorTitle')}</DialogTitle>
+                          <DialogDescription>
+                            {t('data.tarifarios.adjustFactorDescription', { type: activeTab.toUpperCase() })}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="factor">{t('data.tarifarios.fields.adjustmentFactor')}</Label>
+                            <Input
+                              id="factor"
+                              type="number"
+                              step="0.01"
+                              min="0.1"
+                              max="5"
+                              value={adjustmentFactor}
+                              onChange={(e) => setAdjustmentFactor(parseFloat(e.target.value) || 1)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t('data.tarifarios.factorExample')}
+                            </p>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsAdjustDialogOpen(false)}>
+                            {t('common.cancel')}
+                          </Button>
+                          <Button onClick={handleApplyAdjustment}>
+                            {t('data.tarifarios.applyAdjustment')}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <Button variant="outline" size="sm" onClick={handleResetTarifario}>
+                      <RefreshCw className="mr-2 size-4" />
+                      {t('data.tarifarios.reset')}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Search */}
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={t('data.tarifarios.searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Table */}
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('data.tarifarios.fields.serviceCode')}</TableHead>
+                      <TableHead>{t('data.tarifarios.fields.serviceName')}</TableHead>
+                      <TableHead className="text-right">{t('data.tarifarios.fields.baseValue')}</TableHead>
+                      <TableHead className="text-right">{t('data.tarifarios.fields.adjustmentFactor')}</TableHead>
+                      <TableHead className="text-right">{t('data.tarifarios.fields.finalValue')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRecords.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-32 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <FileText className="size-8 text-muted-foreground" />
+                            <p className="text-muted-foreground">{t('common.noData')}</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredRecords.slice(0, 20).map((record) => (
+                        <TableRow key={record.id}>
+                          <TableCell className="font-mono">{record.serviceCode}</TableCell>
+                          <TableCell className="max-w-[300px] truncate">{record.serviceName}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(record.baseValue)}</TableCell>
+                          <TableCell className="text-right">
+                            <Badge variant="outline">{record.adjustmentFactor}x</Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(record.finalValue)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredRecords.length > 20 && (
+                <p className="text-sm text-muted-foreground text-center">
+                  {t('data.tarifarios.showingRecords', { total: formatNumber(filteredRecords.length) })}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

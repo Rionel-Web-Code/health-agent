@@ -260,7 +260,12 @@
       "factorExample": "Example: 1.10 = +10%, 0.85 = -15%",
       "adjustmentApplied": "Adjustment factor {{factor}}x applied to {{type}} fee schedule",
       "resetSuccess": "{{type}} fee schedule restored to default values",
-      "showingRecords": "Showing 20 of {{total}} records"
+      "showingRecords": "Showing 20 of {{total}} records",
+      "messages": {
+        "uploadSuccess": "{{count}} tariff records uploaded successfully",
+        "mockLoaded": "{{count}} sample tariff records loaded",
+        "cleared": "Tariff data cleared"
+      }
     },
     "upload": {
       "dragDrop": "Drag files here",
@@ -288,6 +293,29 @@
       "missingFields": "Missing Fields",
       "invalidFormat": "Invalid Format",
       "outOfRange": "Out of Range"
+    }
+  },
+  "notaTecnica": {
+    "title": "Technical Note",
+    "subtitle": "Generate and review the technical note for this contract",
+    "generate": "Generate Technical Note",
+    "generatedAt": "Generated",
+    "noData": "Insufficient data",
+    "noDataDescription": "Upload RIPS, population, and tariff data to generate a complete technical note.",
+    "sections": {
+      "contractInfo": "Contract Information",
+      "servicesBreakdown": "Services Breakdown",
+      "topDiagnoses": "Top 10 Diagnoses by Cost",
+      "topDiagnosesDescription": "CIE-10 codes with highest total cost",
+      "populationSummary": "Population Summary",
+      "readiness": "Data Readiness"
+    },
+    "indicators": {
+      "totalValue": "Total Service Value",
+      "costPerCapita": "Cost per Capita",
+      "avgCostPerService": "Avg. Cost per Service",
+      "utilizationRate": "Utilization Rate",
+      "estimatedAnnual": "Estimated Annual Value"
     }
   },
   "consent": {
