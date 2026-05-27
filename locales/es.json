@@ -1,0 +1,323 @@
+{
+  "common": {
+    "appName": "Nota Técnica de Salud",
+    "appDescription": "Sistema de generación de Notas Técnicas para contratos de salud en Colombia",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "upload": "Cargar",
+    "download": "Descargar",
+    "view": "Ver",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "all": "Todos",
+    "none": "Ninguno",
+    "select": "Seleccionar",
+    "required": "Requerido",
+    "optional": "Opcional",
+    "actions": "Acciones",
+    "details": "Detalles",
+    "status": "Estado",
+    "date": "Fecha",
+    "name": "Nombre",
+    "description": "Descripción",
+    "code": "Código",
+    "type": "Tipo",
+    "total": "Total",
+    "noData": "No hay datos disponibles",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información",
+    "loadSampleData": "Cargar datos de ejemplo",
+    "accept": "Aceptar",
+    "decline": "Rechazar"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "loginButton": "Ingresar",
+    "loginError": "Credenciales inválidas",
+    "loginSuccess": "Sesión iniciada correctamente",
+    "logoutSuccess": "Sesión cerrada correctamente",
+    "welcomeBack": "Bienvenido de nuevo",
+    "signInToContinue": "Inicia sesión para continuar",
+    "securityNotice": "Este sistema procesa datos sensibles de salud protegidos por la Ley 1581 de 2012. El acceso no autorizado será reportado."
+  },
+  "nav": {
+    "dashboard": "Panel de Control",
+    "contracts": "Contratos",
+    "data": "Datos",
+    "rips": "RIPS",
+    "population": "Población",
+    "tarifarios": "Tarifarios",
+    "settings": "Configuración",
+    "help": "Ayuda",
+    "profile": "Perfil"
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "welcome": "Bienvenido al Sistema de Notas Técnicas",
+    "activeContracts": "Contratos Activos",
+    "pendingReviews": "Revisiones Pendientes",
+    "dataUploads": "Cargas de Datos",
+    "recentActivity": "Actividad Reciente",
+    "quickActions": "Acciones Rápidas",
+    "newContract": "Nuevo Contrato",
+    "uploadRips": "Cargar RIPS",
+    "uploadPopulation": "Cargar Población",
+    "viewReports": "Ver Reportes",
+    "systemStatus": "Estado del Sistema",
+    "lastUpdate": "Última Actualización",
+    "totalPopulation": "Población Total",
+    "ripsRecords": "Registros RIPS",
+    "noRecentActivity": "No hay actividad reciente"
+  },
+  "contracts": {
+    "title": "Gestión de Contratos",
+    "subtitle": "Administre los contratos de salud y sus notas técnicas",
+    "newContract": "Nuevo Contrato",
+    "contractList": "Lista de Contratos",
+    "contractDetails": "Detalles del Contrato",
+    "contractCode": "Código del Contrato",
+    "contractName": "Nombre del Contrato",
+    "epsName": "Nombre de la EPS",
+    "ipsName": "Nombre de la IPS",
+    "contractType": "Tipo de Contrato",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "populationCount": "Población Contratada",
+    "createdAt": "Fecha de Creación",
+    "updatedAt": "Última Modificación",
+    "createdBy": "Creado Por",
+    "types": {
+      "capitacion": "Capitación",
+      "evento": "Evento",
+      "mixto": "Mixto"
+    },
+    "status": {
+      "draft": "Borrador",
+      "in_progress": "En Progreso",
+      "review": "En Revisión",
+      "approved": "Aprobado",
+      "rejected": "Rechazado"
+    },
+    "form": {
+      "step1": "Información Básica",
+      "step2": "Partes del Contrato",
+      "step3": "Fechas y Población",
+      "step4": "Revisión y Confirmación",
+      "basicInfo": "Complete la información básica del contrato",
+      "parties": "Identifique las partes involucradas",
+      "datesPopulation": "Defina el período y la población",
+      "review": "Revise la información antes de guardar",
+      "typeCapitacionHelp": "Pago fijo por afiliado",
+      "typeEventoHelp": "Pago por servicio prestado",
+      "typeMixtoHelp": "Combinación de ambos",
+      "epsHelp": "Entidad Promotora de Salud contratante",
+      "ipsHelp": "Institución Prestadora de Servicios de Salud",
+      "populationHelp": "Número de afiliados cubiertos por el contrato"
+    },
+    "history": {
+      "created": "Contrato creado",
+      "lastModified": "Última modificación"
+    },
+    "messages": {
+      "created": "Contrato creado exitosamente",
+      "updated": "Contrato actualizado exitosamente",
+      "deleted": "Contrato eliminado exitosamente",
+      "deleteConfirm": "¿Está seguro de eliminar este contrato?",
+      "noContracts": "No hay contratos registrados"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "data": "Datos Asociados",
+      "history": "Historial"
+    }
+  },
+  "data": {
+    "title": "Gestión de Datos",
+    "subtitle": "Cargue y administre los datos para el análisis",
+    "rips": {
+      "title": "Datos RIPS",
+      "subtitle": "Registro Individual de Prestación de Servicios de Salud",
+      "uploadTitle": "Cargar Archivo RIPS",
+      "uploadDescription": "Arrastre archivos CSV o JSON aquí o haga clic para seleccionar",
+      "serviceTypes": {
+        "AC": "Consultas",
+        "AP": "Procedimientos",
+        "AM": "Medicamentos",
+        "AH": "Hospitalizaciones",
+        "AU": "Urgencias",
+        "AN": "Recién Nacidos"
+      },
+      "fields": {
+        "serviceDate": "Fecha del Servicio",
+        "serviceCode": "Código del Servicio",
+        "diagnosisCode": "Código de Diagnóstico",
+        "beneficiaryId": "ID del Beneficiario",
+        "quantity": "Cantidad",
+        "unitValue": "Valor Unitario",
+        "totalValue": "Valor Total"
+      },
+      "summary": {
+        "totalRecords": "Total de Registros",
+        "dateRange": "Rango de Fechas",
+        "uniqueBeneficiaries": "Beneficiarios Únicos",
+        "totalValue": "Valor Total"
+      },
+      "messages": {
+        "uploadSuccess": "{{count}} registros RIPS cargados exitosamente",
+        "mockLoaded": "{{count}} registros de ejemplo cargados",
+        "cleared": "Datos RIPS eliminados",
+        "byServiceType": "Registros por Tipo de Servicio"
+      }
+    },
+    "population": {
+      "title": "Datos de Población",
+      "subtitle": "Padrón de beneficiarios afiliados",
+      "uploadTitle": "Cargar Padrón de Población",
+      "uploadDescription": "Arrastre archivos CSV o JSON aquí o haga clic para seleccionar",
+      "fields": {
+        "beneficiaryId": "ID del Beneficiario",
+        "documentType": "Tipo de Documento",
+        "documentNumber": "Número de Documento",
+        "firstName": "Nombres",
+        "lastName": "Apellidos",
+        "birthDate": "Fecha de Nacimiento",
+        "gender": "Género",
+        "ageGroup": "Grupo de Edad",
+        "riskCategory": "Categoría de Riesgo",
+        "municipality": "Municipio",
+        "zone": "Zona"
+      },
+      "summary": {
+        "totalPopulation": "Población Total",
+        "ageDistribution": "Distribución por Edad",
+        "genderDistribution": "Distribución por Género",
+        "riskDistribution": "Distribución por Riesgo"
+      },
+      "riskCategories": {
+        "healthy": "Sanos",
+        "chronic": "Crónicos",
+        "highCost": "Alto Costo"
+      },
+      "genders": {
+        "M": "Masculino",
+        "F": "Femenino"
+      },
+      "messages": {
+        "uploadSuccess": "{{count}} registros de población cargados",
+        "mockLoaded": "{{count}} registros de ejemplo cargados",
+        "cleared": "Datos de población eliminados",
+        "agePyramidDescription": "Pirámide poblacional por grupos de edad"
+      }
+    },
+    "tarifarios": {
+      "title": "Tarifarios",
+      "subtitle": "Esquemas de tarifas para servicios de salud",
+      "uploadTitle": "Cargar Tarifario",
+      "uploadDescription": "Arrastre archivos CSV o JSON aquí o haga clic para seleccionar",
+      "types": {
+        "soat": "SOAT",
+        "iss": "ISS",
+        "custom": "Personalizado"
+      },
+      "fields": {
+        "serviceCode": "Código del Servicio",
+        "serviceName": "Nombre del Servicio",
+        "baseValue": "Valor Base",
+        "adjustmentFactor": "Factor de Ajuste",
+        "finalValue": "Valor Final"
+      },
+      "summary": {
+        "totalServices": "Total de Servicios",
+        "lastUpdate": "Última Actualización"
+      },
+      "servicesAvailable": "{{count}} servicios disponibles",
+      "adjustFactor": "Ajustar Factor",
+      "adjustFactorTitle": "Ajustar Factor de Tarifas",
+      "adjustFactorDescription": "Aplique un factor de ajuste a todos los valores del tarifario {{type}}.",
+      "applyAdjustment": "Aplicar Ajuste",
+      "reset": "Restaurar",
+      "searchPlaceholder": "Buscar por código o nombre...",
+      "factorExample": "Ejemplo: 1.10 = +10%, 0.85 = -15%",
+      "adjustmentApplied": "Factor de ajuste {{factor}}x aplicado al tarifario {{type}}",
+      "resetSuccess": "Tarifario {{type}} restaurado a valores por defecto",
+      "showingRecords": "Mostrando 20 de {{total}} registros"
+    },
+    "upload": {
+      "dragDrop": "Arrastre archivos aquí",
+      "orClick": "o haga clic para seleccionar",
+      "supportedFormats": "Formatos soportados: CSV, JSON",
+      "maxSize": "Tamaño máximo: 50MB",
+      "uploading": "Cargando archivo...",
+      "processing": "Procesando datos...",
+      "validating": "Validando estructura...",
+      "complete": "Carga completada",
+      "error": "Error en la carga",
+      "preview": "Vista Previa",
+      "confirmUpload": "Confirmar Carga",
+      "cancelUpload": "Cancelar",
+      "rowsDetected": "filas detectadas",
+      "columnsDetected": "columnas detectadas"
+    },
+    "validation": {
+      "title": "Resultados de Validación",
+      "valid": "Válido",
+      "invalid": "Inválido",
+      "warnings": "Advertencias",
+      "errors": "Errores",
+      "duplicates": "Duplicados",
+      "missingFields": "Campos Faltantes",
+      "invalidFormat": "Formato Inválido",
+      "outOfRange": "Fuera de Rango"
+    }
+  },
+  "consent": {
+    "purposesTitle": "Finalidades del tratamiento:",
+    "rightsTitle": "Derechos del titular:"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "theme": "Tema",
+    "themes": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "notifications": "Notificaciones",
+    "profile": "Perfil de Usuario"
+  },
+  "errors": {
+    "generic": "Ha ocurrido un error inesperado",
+    "notFound": "Recurso no encontrado",
+    "unauthorized": "No autorizado",
+    "forbidden": "Acceso denegado",
+    "validation": "Error de validación",
+    "network": "Error de conexión",
+    "fileType": "Tipo de archivo no soportado",
+    "fileSize": "El archivo excede el tamaño máximo permitido",
+    "fileParse": "Error al procesar el archivo",
+    "required": "Este campo es requerido",
+    "invalidEmail": "Correo electrónico inválido",
+    "invalidDate": "Fecha inválida"
+  }
+}
